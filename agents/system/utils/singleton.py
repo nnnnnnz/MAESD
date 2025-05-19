@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-@Time    : 2023/5/11 16:15
-@Author  : alexanderwu
-@File    : singleton.py
-@From    : https://github.com/geekan/MetaGPT/blob/main/metagpt/utils/singleton.py
-"""
+
 
 import abc
 
