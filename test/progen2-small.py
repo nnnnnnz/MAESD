@@ -9,7 +9,7 @@ tokenizer = Tokenizer.from_pretrained("hugohrban/progen2-small")
 tokenizer.no_padding()
 
 # prepare input
-prompt = "1MEVVIVTGMSGAGK"
+prompt = ""
 input_ids = torch.tensor(tokenizer.encode(prompt).ids).to(model.device)
 
 # forward pass
