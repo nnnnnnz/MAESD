@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-@Time    : 2023/4/29 16:07
-@Author  : alexanderwu
-@File    : common.py
-@From    : https://github.com/geekan/MetaGPT/blob/main/metagpt/utils/common.py
-"""
+
 import ast
 import inspect
 import os
@@ -16,9 +11,10 @@ from agents.system.logs import logger
 
 
 def check_cmd_exists(command) -> int:
-    """ 检查命令是否存在
-    :param command: 待检查的命令
-    :return: 如果命令存在，返回0，如果不存在，返回非0
+    """Check if a command exists in the system
+    
+    :param command: Command to check
+    :return: 0 if command exists, non-zero otherwise
     """
     check_command = 'command -v ' + command + ' >/dev/null 2>&1 || { echo >&2 "no mermaid"; exit 1; }'
     result = os.system(check_command)
@@ -26,115 +22,106 @@ def check_cmd_exists(command) -> int:
 
 
 class OutputParser:
+    """Utility class for parsing structured output text"""
 
     @classmethod
     def parse_blocks(cls, text: str):
-        # 首先根据"##"将文本分割成不同的block
+        """Split text into blocks using ## delimiters"""
         blocks = text.split("##")
-
-        # 创建一个字典，用于存储每个block的标题和内容
         block_dict = {}
 
-        # 遍历所有的block
         for block in blocks:
-            # 如果block不为空，则继续处理
             if block.strip() != "":
-                # 将block的标题和内容分开，并分别去掉前后的空白字符
-                block_title, block_content = block.split("\n", 1)
-                # LLM可能出错，在这里做一下修正
-                if block_title[-1] == ":":
-                    block_title = block_title[:-1]
-                block_dict[block_title.strip()] = block_content.strip()
+                try:
+                    block_title, block_content = block.split("\n", 1)
+                    # Fix potential LLM formatting errors
+                    if block_title.endswith(":"):
+                        block_title = block_title[:-1]
+                    block_dict[block_title.strip()] = block_content.strip()
+                except ValueError:
+                    continue
 
         return block_dict
 
     @classmethod
     def parse_code(cls, text: str, lang: str = "") -> str:
+        """Extract code block from text"""
         pattern = rf'```{lang}.*?\s+(.*?)```'
         match = re.search(pattern, text, re.DOTALL)
         if match:
-            code = match.group(1)
-        else:
-            raise Exception
-        return code
+            return match.group(1)
+        raise ValueError("No code block found")
 
     @classmethod
     def parse_str(cls, text: str):
+        """Parse a simple string value"""
         text = text.split("=")[-1]
-        text = text.strip().strip("'").strip("\"")
-        return text
+        return text.strip().strip("'").strip("\"")
 
     @classmethod
     def parse_file_list(cls, text: str) -> list[str]:
-        # Regular expression pattern to find the tasks list.
+        """Parse a list of files from text"""
         pattern = r'\s*(.*=.*)?(\[.*\])'
-
-        # Extract tasks list string using regex.
         match = re.search(pattern, text, re.DOTALL)
         if match:
-            tasks_list_str = match.group(2)
-
-            # Convert string representation of list to a Python list using ast.literal_eval.
-            tasks = ast.literal_eval(tasks_list_str)
-        else:
-            tasks = text.split("\n")
-        return tasks
+            return ast.literal_eval(match.group(2))
+        return text.split("\n")
 
     @classmethod
     def parse_data(cls, data):
+        """Parse structured data with automatic format detection"""
         block_dict = cls.parse_blocks(data)
         parsed_data = {}
         for block, content in block_dict.items():
-            # 尝试去除code标记
+            # Try parsing as code
             try:
                 content = cls.parse_code(text=content)
             except Exception:
                 pass
-
-            # 尝试解析list
+            
+            # Try parsing as list
             try:
                 content = cls.parse_file_list(text=content)
             except Exception:
                 pass
+            
             parsed_data[block] = content
         return parsed_data
 
     @classmethod
     def parse_data_with_mapping(cls, data, mapping):
+        """Parse data with type annotations"""
         block_dict = cls.parse_blocks(data)
         parsed_data = {}
         for block, content in block_dict.items():
-            # 尝试去除code标记
+            # Try parsing as code
             try:
                 content = cls.parse_code(text=content)
             except Exception:
                 pass
+                
             typing_define = mapping.get(block, None)
             if isinstance(typing_define, tuple):
                 typing = typing_define[0]
             else:
                 typing = typing_define
-            if typing == List[str] or typing == List[Tuple[str, str]]:
-                # 尝试解析list
+                
+            if typing in (List[str], List[Tuple[str, str]]):
                 try:
                     content = cls.parse_file_list(text=content)
                 except Exception:
                     pass
-            # TODO: 多余的引号去除有风险，后期再解决
-            # elif typing == str:
-            #     # 尝试去除多余的引号
-            #     try:
-            #         content = cls.parse_str(text=content)
-            #     except Exception:
-            #         pass
+                    
             parsed_data[block] = content
         return parsed_data
 
 
 class CodeParser:
+    """Specialized parser for code-related text parsing"""
 
     @classmethod
     def parse_block(cls, block: str, text: str) -> str:
+        """Extract specific block from text"""
         blocks = cls.parse_blocks(text)
         for k, v in blocks.items():
             if block in k:
@@ -143,64 +130,52 @@ class CodeParser:
 
     @classmethod
     def parse_blocks(cls, text: str):
-        # 首先根据"##"将文本分割成不同的block
+        """Split text into named blocks"""
         blocks = text.split("##")
-
-        # 创建一个字典，用于存储每个block的标题和内容
         block_dict = {}
 
-        # 遍历所有的block
         for block in blocks:
-            # 如果block不为空，则继续处理
             if block.strip() != "":
-                # 将block的标题和内容分开，并分别去掉前后的空白字符
-                block_title, block_content = block.split("\n", 1)
-                block_dict[block_title.strip()] = block_content.strip()
+                try:
+                    block_title, block_content = block.split("\n", 1)
+                    block_dict[block_title.strip()] = block_content.strip()
+                except ValueError:
+                    continue
 
         return block_dict
 
     @classmethod
     def parse_code(cls, block: str, text: str, lang: str = "") -> str:
+        """Extract code block from text with optional block filtering"""
         if block:
             text = cls.parse_block(block, text)
         pattern = rf'```{lang}.*?\s+(.*?)```'
         match = re.search(pattern, text, re.DOTALL)
         if match:
-            code = match.group(1)
-        else:
-            logger.error(f"{pattern} not match following text:")
-            logger.error(text)
-            raise Exception
-        return code
+            return match.group(1)
+        logger.error(f"Pattern {pattern} not found in text")
+        raise ValueError("Code block not found")
 
     @classmethod
     def parse_str(cls, block: str, text: str, lang: str = ""):
+        """Parse a simple string value from code block"""
         code = cls.parse_code(block, text, lang)
         code = code.split("=")[-1]
-        code = code.strip().strip("'").strip("\"")
-        return code
+        return code.strip().strip("'").strip("\"")
 
     @classmethod
     def parse_file_list(cls, block: str, text: str, lang: str = "") -> list[str]:
-        # Regular expression pattern to find the tasks list.
+        """Parse list of files from code block"""
         code = cls.parse_code(block, text, lang)
-        print(code)
         pattern = r'\s*(.*=.*)?(\[.*\])'
-
-        # Extract tasks list string using regex.
         match = re.search(pattern, code, re.DOTALL)
         if match:
-            tasks_list_str = match.group(2)
-
-            # Convert string representation of list to a Python list using ast.literal_eval.
-            tasks = ast.literal_eval(tasks_list_str)
-        else:
-            raise Exception
-        return tasks
+            return ast.literal_eval(match.group(2))
+        raise ValueError("List pattern not found")
 
 
-class NoMoneyException(Exception):
-    """Raised when the operation cannot be completed due to insufficient funds"""
+class InsufficientFundsException(Exception):
+    """Raised when operation cannot be completed due to insufficient funds"""
 
     def __init__(self, amount, message="Insufficient funds"):
         self.amount = amount
@@ -213,20 +188,17 @@ class NoMoneyException(Exception):
 
 def print_members(module, indent=0):
     """
-    https://stackoverflow.com/questions/1796180/how-can-i-get-a-list-of-all-classes-within-current-module-in-python
-    :param module:
-    :param indent:
-    :return:
+    Recursively print members of a module/class
+    
+    :param module: Module or class to inspect
+    :param indent: Indentation level for output
     """
     prefix = ' ' * indent
     for name, obj in inspect.getmembers(module):
-        print(name, obj)
         if inspect.isclass(obj):
             print(f'{prefix}Class: {name}')
-            # print the methods within the class
-            if name in ['__class__', '__base__']:
-                continue
-            print_members(obj, indent + 2)
+            if name not in ['__class__', '__base__']:
+                print_members(obj, indent + 2)
         elif inspect.isfunction(obj):
             print(f'{prefix}Function: {name}')
         elif inspect.ismethod(obj):
