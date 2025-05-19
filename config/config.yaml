@@ -1,8 +1,7 @@
-# DO NOT MODIFY THIS FILE, create a new key.yaml, define OPENAI_API_KEY.
-# The configuration of key.yaml has a higher priority and will not enter git
+# DO NOT MODIFY THIS FILE, create a new key.yaml to override these values
+# The configuration of key.yaml has higher priority and will not be committed to git
 
-#### if OpenAI
-
+### OpenAI Configuration (optional)
 # OPENAI_API_KEY: "YOUR_API_KEY"
 # OPENAI_API_BASE: "YOUR_API_BASE"
 # OPENAI_PROXY: "http://127.0.0.1:8118"
@@ -10,24 +9,35 @@ OPENAI_API_MODEL: "gpt-4"
 MAX_TOKENS: 1500
 RPM: 10
 
-#### if Anthropic
-#Anthropic_API_KEY: "YOUR_API_KEY"
+### Anthropic Configuration (optional)
+# Anthropic_API_KEY: "YOUR_API_KEY"
 
-#### if AZURE, check https://github.com/openai/openai-cookbook/blob/main/examples/azure/chat.ipynb
+### Azure Configuration (optional)
+# OPENAI_API_TYPE: "azure"
+# OPENAI_API_BASE: "YOUR_AZURE_ENDPOINT"
+# OPENAI_API_KEY: "YOUR_AZURE_API_KEY"
+# OPENAI_API_VERSION: "YOUR_AZURE_API_VERSION"
+# DEPLOYMENT_ID: "YOUR_DEPLOYMENT_ID"
 
-#OPENAI_API_TYPE: "azure"
-#OPENAI_API_BASE: "YOUR_AZURE_ENDPOINT"
-#OPENAI_API_KEY: "YOUR_AZURE_API_KEY"
-#OPENAI_API_VERSION: "YOUR_AZURE_API_VERSION"
-#DEPLOYMENT_ID: "YOUR_DEPLOYMENT_ID"
+### DeepSeek Configuration (optional)
+# DEEPSEEK_API_KEY: "YOUR_DEEPSEEK_API_KEY"
+# DEEPSEEK_API_BASE: "https://api.deepseek.com/v1" 
+# DEEPSEEK_API_MODEL: "deepseek-chat"  # or other available models
+# DEEPSEEK_MAX_TOKENS: 4096  # Adjust based on model limits
 
-#### for Search
+### Search Engine Configuration (optional)
+# SERPAPI_API_KEY: "YOUR_API_KEY"           # From https://serpapi.com/
+# GOOGLE_API_KEY: "YOUR_API_KEY"            # From https://console.cloud.google.com/apis/credentials
+# GOOGLE_CSE_ID: "YOUR_CSE_ID"              # From https://programmablesearchengine.google.com/controlpanel/create
+# SERPER_API_KEY: "YOUR_API_KEY"            # From https://serper.dev/
 
-## Visit https://serpapi.com/ to get key.
-# SERPAPI_API_KEY: "YOUR_API_KEY"
-## Visit https://console.cloud.google.com/apis/credentials to get key.
-# GOOGLE_API_KEY: "YOUR_API_KEY"
-## Visit https://programmablesearchengine.google.com/controlpanel/create to get id.
-# GOOGLE_CSE_ID: "YOUR_CSE_ID"
-## Visit https://serper.dev/ to get key.
-# SERPER_API_KEY: "YOUR_API_KEY"
+### Other Settings
+WEB_BROWSER_ENGINE: "playwright"  # Options: playwright, selenium
+PLAYWRIGHT_BROWSER_TYPE: "chromium"  # Options: chromium, firefox, webkit
+SELENIUM_BROWSER_TYPE: "chrome"  # Options: chrome, firefox, edge
+
+# Enable long-term memory (experimental)
+LONG_TERM_MEMORY: false
+
+# Maximum budget for API calls (in USD)
+MAX_BUDGET: 10.0
