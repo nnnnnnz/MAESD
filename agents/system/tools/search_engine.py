@@ -15,12 +15,7 @@ from agents.system.tools import SearchEngineType
 
 
 class SearchEngine:
-    """
-    TODO: 合入Google Search 并进行反代
-    注：这里Google需要挂Proxifier或者类似全局代理
-    - DDG: https://pypi.org/project/duckduckgo-search/
-    - GOOGLE: https://programmablesearchengine.google.com/controlpanel/overview?cx=63f9de531d0e24de9
-    """
+
     def __init__(self, engine=None, run_func=None, serpapi_api_key=None):
         self.config = Config()
         self.run_func = run_func
