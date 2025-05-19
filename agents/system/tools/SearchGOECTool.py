@@ -7,23 +7,23 @@ from agents.system.logs import logger
 
 class SearchGOECTool:
     """
-    整合 GO 和 EC 编号查询的工具类，提供以下功能：
-    1. 从 GO 编号获取注释
-    2. 从注释获取 GO 编号
-    3. 从 EC 编号获取注释
-    4. 从注释获取 EC 编号
+    A tool class integrating GO and EC number queries, providing the following functionalities:
+    1. Get annotation from GO ID
+    2. Get GO IDs from annotation
+    3. Get annotation from EC number
+    4. Get EC numbers from annotation
     """
 
     def __init__(self):
-        # 可以在这里初始化任何需要的配置
+        # Initialize any required configurations here
         pass
 
     def normalize_ec_number(self, ec_number: str) -> str:
-        """标准化 EC 编号格式"""
+        """Standardize EC number format"""
         return re.sub(r'^\s*(EC|ec)\s*', '', ec_number, flags=re.IGNORECASE).strip()
 
     def validate_ec_number(self, ec_number: str) -> bool:
-        """验证 EC 编号格式"""
+        """Validate EC number format"""
         clean_ec = self.normalize_ec_number(ec_number)
         if not re.match(r'^([\dx-]+\.){3}[\dx-]+$', clean_ec):
             return False
@@ -40,7 +40,7 @@ class SearchGOECTool:
         return True
 
     def get_go_definition(self, go_id: str) -> Tuple[Optional[Dict], Optional[str]]:
-        """通过 QuickGO API 查询 GO 术语定义"""
+        """Query GO term definition using QuickGO API"""
         url = f"https://www.ebi.ac.uk/QuickGO/services/ontology/go/terms/{go_id}"
         try:
             response = requests.get(url, headers={"Accept": "application/json"}, timeout=10)
@@ -62,14 +62,14 @@ class SearchGOECTool:
             }, None
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"GO查询网络错误: {str(e)}")
+            logger.error(f"GO query network error: {str(e)}")
             return None, f"Network error: {str(e)}"
         except (KeyError, IndexError, ValueError) as e:
-            logger.error(f"GO数据解析错误: {str(e)}")
+            logger.error(f"GO data parsing error: {str(e)}")
             return None, f"Data parsing error: {str(e)}"
 
     def search_go_by_definition(self, query: str, max_results: int = 5) -> Tuple[List[Dict], Optional[str]]:
-        """通过定义文本模糊搜索 GO 术语"""
+        """Fuzzy search GO terms by definition text"""
         url = "https://www.ebi.ac.uk/QuickGO/services/ontology/go/search"
         params = {
             "query": f'definition:"{query}"',
@@ -92,14 +92,14 @@ class SearchGOECTool:
             return results, None
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"GO搜索网络错误: {str(e)}")
+            logger.error(f"GO search network error: {str(e)}")
             return [], f"Network error: {str(e)}"
         except (KeyError, ValueError) as e:
-            logger.error(f"GO搜索数据解析错误: {str(e)}")
+            logger.error(f"GO search data parsing error: {str(e)}")
             return [], f"Data parsing error: {str(e)}"
 
     def get_ec_info(self, ec_number: str) -> Tuple[Optional[Dict], Optional[str]]:
-        """查询 EC 编号信息"""
+        """Query EC number information"""
         ec_number = self.normalize_ec_number(ec_number)
         url = f"https://enzyme.expasy.org/EC/{ec_number}"
         headers = {
@@ -110,19 +110,19 @@ class SearchGOECTool:
             response.raise_for_status()
 
             if "No such enzyme" in response.text:
-                return None, "EC编号不存在"
+                return None, "EC number does not exist"
 
             soup = BeautifulSoup(response.text, 'html.parser')
 
-            # 处理通配符查询
+            # Handle wildcard queries
             if '-' in ec_number:
                 target_link = soup.find('a', href=ec_number)
                 if not target_link:
-                    return None, f"未找到{ec_number}的分类定义"
+                    return None, f"Classification definition not found for {ec_number}"
                 definition = target_link.next_sibling.strip().lstrip(':').strip()
                 return {"ec_number": ec_number, "definition": definition}, None
 
-            # 处理具体编号的详细解析
+            # Process detailed parsing for specific numbers
             info = {
                 "ec_number": ec_number,
                 "accepted_name": "N/A",
@@ -175,14 +175,14 @@ class SearchGOECTool:
             return info, None
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"EC查询网络错误: {str(e)}")
+            logger.error(f"EC query network error: {str(e)}")
             return None, f"Network error: {str(e)}"
         except Exception as e:
-            logger.error(f"EC数据解析错误: {str(e)}")
+            logger.error(f"EC data parsing error: {str(e)}")
             return None, f"Parsing error: {str(e)}"
 
     def search_ec_by_annotation(self, keyword: str) -> List[Dict]:
-        """通过注解模糊搜索 EC 编号"""
+        """Fuzzy search EC numbers by annotation"""
         base_url = "http://rest.kegg.jp/find/enzyme/"
         try:
             response = requests.get(f"{base_url}{quote_plus(keyword)}", timeout=10)
@@ -203,8 +203,8 @@ class SearchGOECTool:
             return results or [{"error": "No corresponding EC number found"}]
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"EC搜索网络错误: {str(e)}")
+            logger.error(f"EC search network error: {str(e)}")
             return [{"error": f"API request failed: {str(e)}"}]
         except Exception as e:
-            logger.error(f"EC搜索错误: {str(e)}")
+            logger.error(f"EC search error: {str(e)}")
             return [{"error": f"Error occurred: {str(e)}"}]
