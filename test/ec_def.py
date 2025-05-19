@@ -1,44 +1,56 @@
-# ec_def.py
+# ec_query_tool.py
 from agents.system.tools.enzy_api import get_ec_info, validate_ec_number
 
 def main():
-    print("ExPASy EC 数据库查询工具")
-    print("输入EC编号查询详细信息，输入q退出\n")
+    """EC Number Query Tool for ExPASy Enzyme Database"""
+    print("ExPASy EC Number Query Tool")
+    print("Enter EC numbers to get detailed information (q to quit)\n")
 
     while True:
-        ec_input = input("请输入EC编号（如1.1.1.1 或 1.-.-.-或EC 1.1.1.1或ec 1.1.1.1）: ").strip()
-        if ec_input.lower() == "q":
+        user_input = input("Enter EC number (e.g., 1.1.1.1, 1.-.-.-, EC 1.1.1.1): ").strip()
+        
+        # Exit condition
+        if user_input.lower() == "q":
             break
 
-        if not validate_ec_number(ec_input):
-            print("EC编号格式错误！正确格式示例：1.1.1.1 或 1.-.-.-")
+        # Validate input format
+        if not validate_ec_number(user_input):
+            print("Invalid EC number format! Examples: 1.1.1.1 or 1.-.-.-")
             continue
 
-        info, error = get_ec_info(ec_input)
+        # Get EC information
+        ec_data, error = get_ec_info(user_input)
 
         if error:
-            print(f"错误：{error}")
+            print(f"Error: {error}")
             continue
-        print(info)
 
-        print("\n=== 查询结果 ===")
-        if 'definition' in info:
-            print(f"EC分类: {info['ec_number']}")
-            print(f"分类定义: {info['definition']}")
+        # Display results
+        print("\n=== Query Results ===")
+        
+        if 'definition' in ec_data:
+            # Wildcard EC number case
+            print(f"EC Class: {ec_data['ec_number']}")
+            print(f"Classification Definition: {ec_data['definition']}")
         else:
-            print(f"EC编号: {info['ec_number']}")
-            print(f"标准名称: {info['accepted_name']}")
-            if info['alternative_names']:
-                print(f"别名: {', '.join(info['alternative_names'])}")
-            if info['reaction']:
-                print("\n催化反应:")
-                for r in info['reaction']:
-                    print(f"  • {r}")
-            if info['comments']:
-                print("\n备注:")
-                for c in info['comments']:
-                    print(f"  › {c}")
-        print("-"*40 + "\n")
+            # Specific EC number case
+            print(f"EC Number: {ec_data['ec_number']}")
+            print(f"Accepted Name: {ec_data['accepted_name']}")
+            
+            if ec_data['alternative_names']:
+                print(f"Synonyms: {', '.join(ec_data['alternative_names'])}")
+            
+            if ec_data['reaction']:
+                print("\nCatalyzed Reaction:")
+                for reaction in ec_data['reaction']:
+                    print(f"  • {reaction}")
+            
+            if ec_data['comments']:
+                print("\nComments:")
+                for comment in ec_data['comments']:
+                    print(f"  › {comment}")
+        
+        print("-" * 40 + "\n")
 
 if __name__ == "__main__":
     main()
