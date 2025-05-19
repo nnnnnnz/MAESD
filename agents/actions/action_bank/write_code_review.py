@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-@Time    : 2023/5/11 14:43
-@Author  : alexanderwu
-@From    : https://github.com/geekan/MetaGPT/blob/main/metagpt/actions/write_code_review.py
-"""
+
 from agents.actions.action import Action
 from agents.system.logs import logger
 from agents.system.schema import Message
