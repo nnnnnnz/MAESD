@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-@Time    : 2023/5/11 14:43
-@Author  : alexanderwu
-@From    : https://github.com/geekan/MetaGPT/blob/main/metagpt/actions/search_and_summarize.py
-"""
+
 import time
 
 from agents.actions import Action
