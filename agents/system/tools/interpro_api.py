@@ -4,13 +4,13 @@ from typing import List, Dict, Optional
 
 
 class InterProSearcher:
-    """封装 InterPro API 文本查询功能的工具类"""
+    """A tool class that encapsulates InterPro API text search functionality"""
 
     def __init__(self, api_endpoint: str = "https://www.ebi.ac.uk/interpro/api/search/text"):
         """
-        初始化 InterPro 搜索工具
-
-        :param api_endpoint: InterPro API 端点 URL
+        Initialize the InterPro search tool
+        
+        :param api_endpoint: InterPro API endpoint URL
         """
         self.api_endpoint = api_endpoint
         self.headers = {
@@ -20,11 +20,11 @@ class InterProSearcher:
 
     def search(self, query: str, timeout: int = 10) -> Optional[List[Dict]]:
         """
-        执行 InterPro 文本搜索
-
-        :param query: 搜索文本
-        :param timeout: 请求超时时间(秒)
-        :return: 搜索结果列表，每个结果是一个字典；如果出错返回None
+        Execute InterPro text search
+        
+        :param query: Search text
+        :param timeout: Request timeout in seconds
+        :return: List of search results (each result is a dict), returns None if error occurs
         """
         try:
             payload = json.dumps({"query": query})
@@ -52,10 +52,10 @@ class InterProSearcher:
 
     def _normalize_results(self, raw_results: List[Dict]) -> List[Dict]:
         """
-        规范化 API 返回的原始结果
-
-        :param raw_results: API 返回的原始结果
-        :return: 规范化后的结果列表
+        Normalize raw results returned from API
+        
+        :param raw_results: Raw results from API
+        :return: List of normalized results
         """
         normalized = []
 
@@ -77,22 +77,22 @@ class InterProSearcher:
         return normalized
 
 
-# 使用示例
+# Example usage
 if __name__ == "__main__":
     searcher = InterProSearcher()
 
-    # 示例搜索
+    # Example search
     print("Searching InterPro for 'kinase'...")
     results = searcher.search("kinase")
 
     if results:
         print(f"Found {len(results)} results:")
-        for i, result in enumerate(results[:3], 1):  # 只显示前3个结果
+        for i, result in enumerate(results[:3], 1):  # Only show first 3 results
             print(f"\nResult {i}:")
             print(f"Accession: {result['accession']}")
             print(f"Name: {result['name']}")
             print(f"Type: {result['type']}")
-            print(f"Description: {result['description'][:100]}...")  # 截断长描述
+            print(f"Description: {result['description'][:100]}...")  # Truncate long description
             print(f"Score: {result['score']}")
     else:
         print("No results found or error occurred.")
