@@ -22,7 +22,7 @@ def main():
         print(f"Ontology: {result['ontology']}")
         print(f"Definition:\n{result['definition']}\n")
 
-        # 打印同义词
+        
         if result["synonyms"]:
             print("\nSynonyms:")
             for synonym in result["synonyms"]:
