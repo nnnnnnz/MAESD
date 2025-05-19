@@ -1,4 +1,1 @@
-OPENAI_API_KEY: "your api"
-OPENAI_API_BASE: "https://api.openai-proxy.org/v1"
-OPENAI_API_MODEL: "gpt-4o"
-MAX_TOKENS: 1500
+
