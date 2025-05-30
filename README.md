@@ -8,3 +8,6 @@
     pip install -r requirements.txt
     ```
 - Set up OpenAI API configs in `config.yaml`.
+
+## Datasets
+All datasets can be found in the `data/` folder.
