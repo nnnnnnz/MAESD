@@ -30,3 +30,6 @@ python setup.py install
 
 ## Acknowledgements
 The [system](https://github.com/nnnnnnz/MAESD/tree/master/agents/system), [action_bank](https://github.com/nnnnnnz/MAESD/tree/master/agents/actions/action_bank) and [role_bank](https://github.com/nnnnnnz/MAESD/tree/master/agents/roles/role_bank) of this code base is built using [MetaGPT](https://github.com/geekan/MetaGPT)
+
+## Results
+$ python main.py --input "Protein design text description" --output result.txt
