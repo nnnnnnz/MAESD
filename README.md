@@ -27,3 +27,6 @@ We randomly selected 400 protein structures with lengths under 500 amino acids f
 cd MAESD
 python setup.py install
 ```
+
+## Acknowledgements
+The [system](https://github.com/nnnnnnz/MAESD/tree/master/agents/system), [action_bank](https://github.com/LinkSoul-AI/AutoAgents/tree/main/autoagents/actions/action_bank) and [role_bank](https://github.com/LinkSoul-AI/AutoAgents/tree/main/autoagents/roles/role_bank) of this code base is built using [MetaGPT](https://github.com/geekan/MetaGPT)
