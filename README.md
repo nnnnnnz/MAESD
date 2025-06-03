@@ -20,3 +20,10 @@ We randomly selected 1,000 entries from the Pfam-A seed dataset as the test setã
 
 **Task3.Structure-Guided Test
 We randomly selected 400 protein structures with lengths under 500 amino acids from the PDB database as the test set.
+
+### Installation
+
+```bash
+cd MAESD
+python setup.py install
+```
