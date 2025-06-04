@@ -70,9 +70,9 @@ MFEVDTYLQFKLLGNEVQFTVDVSKLPCGIEGAVYFTTMPADGGRSRYPLNTAGARYGMGYCNAHCDRWLRFIAGRSNVT
 ----------------------------------------------------
 ## Acknowledgements
 The [system](https://github.com/nnnnnnz/MAESD/tree/master/agents/system), [action_bank](https://github.com/nnnnnnz/MAESD/tree/master/agents/actions/action_bank) and [role_bank](https://github.com/nnnnnnz/MAESD/tree/master/agents/roles/role_bank) of this code base is built using [MetaGPT](https://github.com/geekan/MetaGPT)
-Generative Models
+### Generative Models
 [Progen2](https://github.com/enijkamp/progen2)
 [ProteinMPNN](https://github.com/dauparas/ProteinMPNN)
-Protein Screen Models
+### Protein Screen Models
 [AlphaFold2](https://github.com/google-deepmind/alphafold)
 [Rosetta](https://github.com/RosettaCommons/rosetta)
