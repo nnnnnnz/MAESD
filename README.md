@@ -43,6 +43,11 @@ We randomly selected 400 protein structures with lengths under 500 amino acids f
 cd MAESD
 python setup.py install
 ```
+## Results
+
+```bash
+$ python main.py --input "Protein design text description" --output result.txt
+```
 -----------------------------------------------------------------------------------------------------
 Output example:
 ```
