@@ -5,8 +5,24 @@
 ## Setup
 - Install dependencies
     ```
+    conda create -n maesd python=3.9
+    conda activate maesd
     pip install -r requirements.txt
     ```
+  Protein design model deployment
+  ProteinMPNN
+    ```
+    git clone https://github.com/dauparas/ProteinMPNN
+    ```
+  Progen2
+  ```
+  git clone https://github.com/salesforce/progen
+  cd progen/progen2
+  ```
+  AlphaFold2
+  ```
+  docker pull alphafolddev/alphafold:latest
+  ```
 - Set up OpenAI API configs in `config.yaml`.
 
 ## Datasets
