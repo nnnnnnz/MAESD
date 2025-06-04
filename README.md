@@ -48,6 +48,12 @@ python setup.py install
 ```bash
 $ python main.py --input "Protein design text description" --output result.txt
 ```
+## Results
+
+```bash
+$ python main.py --input "Protein design text description" --output result.txt
+```
+
 -----------------------------------------------------------------------------------------------------
 Output example:
 ```
