@@ -48,12 +48,6 @@ python setup.py install
 ```bash
 $ python main.py --input "Protein design text description" --output result.txt
 ```
-## Results
-
-```bash
-$ python main.py --input "Protein design text description" --output result.txt
-```
-
 -----------------------------------------------------------------------------------------------------
 Output example:
 ```
@@ -77,8 +71,3 @@ MFEVDTYLQFKLLGNEVQFTVDVSKLPCGIEGAVYFTTMPADGGRSRYPLNTAGARYGMGYCNAHCDRWLRFIAGRSNVT
 ## Acknowledgements
 The [system](https://github.com/nnnnnnz/MAESD/tree/master/agents/system), [action_bank](https://github.com/nnnnnnz/MAESD/tree/master/agents/actions/action_bank) and [role_bank](https://github.com/nnnnnnz/MAESD/tree/master/agents/roles/role_bank) of this code base is built using [MetaGPT](https://github.com/geekan/MetaGPT)
 
-## Results
-
-```bash
-$ python main.py --input "Protein design text description" --output result.txt
-```
