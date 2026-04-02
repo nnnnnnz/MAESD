@@ -266,7 +266,6 @@ On the current machine, auto-detection found local Python installations and Cond
 
 ## Notes
 
-- The current SGHFS logic is a lightweight local approximation for development and integration testing.
 - The mock backends are suitable for project scaffolding, interface validation, and dry-run experiments.
 - Real biological deployment should replace mock scoring with validated structure, energy, and function pipelines.
 
