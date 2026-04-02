@@ -2,12 +2,40 @@
 # -*- coding: utf-8 -*-
 
 import ast
+import importlib
 import inspect
 import os
 import re
 from typing import List, Tuple
 
 from agents.system.logs import logger
+
+
+def any_to_str(value) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    if hasattr(value, "__name__"):
+        return str(value.__name__)
+    if hasattr(value, "name") and getattr(value, "name"):
+        return str(getattr(value, "name"))
+    return str(value)
+
+
+def any_to_str_set(value) -> set[str]:
+    if value is None:
+        return set()
+    if isinstance(value, set):
+        return {any_to_str(v) for v in value}
+    if isinstance(value, (list, tuple)):
+        return {any_to_str(v) for v in value}
+    return {any_to_str(value)}
+
+
+def import_class(class_name: str, module_name: str):
+    module = importlib.import_module(module_name)
+    return getattr(module, class_name)
 
 
 def check_cmd_exists(command) -> int:

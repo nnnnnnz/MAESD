@@ -1,60 +1,61 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import asyncio
 import argparse
-import sys
-import signal
-import re
-import logging
-from agents.roles import Manager, ObserverAgents, ObserverPlans
-from agents.explorer import Explorer
-import startup
-import ws_service
+from pathlib import Path
 
-logging.basicConfig(level=logging.WARNING, format='%(asctime)s | %(levelname)-8s | %(module)s:%(funcName)s:%(lineno)d - %(message)s')
-logger = logging.getLogger(__name__)
+from agents.maesd import MAESDPipeline, MAESDSettings, run_maesd_in_environment
 
-def signal_handler(signal, frame):
-    sys.exit(1)
 
-async def commanline(investment: float = 10.0, n_round: int = 3, proxy: str = None, llm_api_key: str = None, serpapi_key: str=None, idea: str=None):
-    if llm_api_key is None:
-        print("OpenAI API key:")
-        llm_api_key = input().strip()
-    if serpapi_key is None:
-        print("SerpAPI key:")
-        serpapi_key = input().strip()
-    if idea is None:
-        print("Give me a task idea:")
-        idea = input().strip()
-    await startup.startup(idea, investment, n_round, llm_api_key=llm_api_key, serpapi_key=serpapi_key, proxy=proxy)
+def main() -> None:
+    parser = argparse.ArgumentParser(description="MAESD protein design pipeline")
+    parser.add_argument("--input", "--idea", dest="idea", required=True, help="Natural-language protein design request")
+    parser.add_argument("--output", type=str, default=None, help="Optional path for the JSON report")
+    parser.add_argument("--config", type=str, default=None, help="Optional YAML config with backend settings")
+    parser.add_argument("--loops", type=int, default=None, help="Maximum evolutionary iterations")
+    parser.add_argument("--population", type=int, default=None, help="Population size per iteration")
+    parser.add_argument("--stagnation-limit", type=int, default=None, help="Early-stop patience for non-improving rounds")
+    parser.add_argument("--seed", type=int, default=None, help="Random seed")
+    parser.add_argument(
+        "--use-environment",
+        action="store_true",
+        help="Run the MAESD pipeline through the Environment/Role bridge instead of calling the pipeline directly",
+    )
+    parser.add_argument(
+        "--reference-structure",
+        type=str,
+        default=None,
+        help="Optional PDB/CIF structure path used by ProteinMPNN or structure-guided refinement",
+    )
+    args = parser.parse_args()
 
-async def service(host: str = "localhost", port: int = 9000, proxy: str=None, llm_api_key: str=None, serpapi_key: str=None):
-    await ws_service.run_service(host=host, port=port, proxy=proxy, llm_api_key=llm_api_key, serpapi_key=serpapi_key)
+    settings = MAESDSettings.from_yaml(args.config) if args.config else MAESDSettings()
+    if args.use_environment:
+        payload = run_maesd_in_environment(
+            prompt=args.idea,
+            settings=settings,
+            seed=args.seed,
+            max_iterations=args.loops,
+            population_size=args.population,
+            stagnation_limit=args.stagnation_limit,
+            reference_structure_path=args.reference_structure,
+        )
+        payload = __import__("json").dumps(payload, ensure_ascii=False, indent=2)
+    else:
+        pipeline = MAESDPipeline(settings=settings, seed=args.seed)
+        report = pipeline.run(
+            args.idea,
+            max_iterations=args.loops,
+            population_size=args.population,
+            stagnation_limit=args.stagnation_limit,
+            reference_structure_path=args.reference_structure,
+        )
+        payload = report.to_json()
+
+    if args.output:
+        Path(args.output).write_text(payload, encoding="utf-8")
+    else:
+        print(payload)
 
 
 if __name__ == "__main__":
-    signal.signal(signal.SIGINT, signal_handler)
-
-    parser = argparse.ArgumentParser(description="AutoAgents")
-    ### TODO: set mode default to commandline
-    parser.add_argument("--mode", default="commandline", choices=["commandline", "service"], help="mode=commandline, service")
-    parser.add_argument("--host", default="127.0.0.1", help="websocket backend service host")
-    parser.add_argument("--port", default=9000, type=int, help="websocket backend service port")
-    parser.add_argument("--proxy", default=None, type=str, help="http proxy, example: http://127.0.0.1:8080")
-    parser.add_argument("--llm_api_key", default=None, type=str, help="OpenAI API key")
-    parser.add_argument("--serpapi_key", default=None, type=str, help="SerpAPI key")
-    parser.add_argument("--idea", default=None, type=str, help="Give me a task idea")
-    args = parser.parse_args()
-
-    proxy = None
-    proxy_regex = r'(http|https|socks|socks5):\/\/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{2,5}'
-    if args.proxy and re.match(proxy_regex, args.proxy):
-        proxy = args.proxy
-
-    if args.mode == "commandline":
-        asyncio.run(commanline(proxy=proxy, llm_api_key=args.llm_api_key, serpapi_key=args.serpapi_key, idea=args.idea))
-    elif args.mode == "service":
-        asyncio.run(service(host=args.host, port=args.port, proxy=proxy, llm_api_key=args.llm_api_key, serpapi_key=args.serpapi_key))
-    else:
-        logger.error(f"Invalid mode: {args.mode}")
+    main()

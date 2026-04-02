@@ -1,0 +1,27 @@
+llm_provider: heuristic
+generation:
+  provider: mock
+  model_name: progen2-mock
+  executable: null
+  checkpoint: null
+  work_dir: null
+  extra: {}
+refinement:
+  provider: mock
+  model_name: proteinmpnn-mock
+  executable: null
+  checkpoint: null
+  work_dir: null
+  extra: {}
+structure:
+  provider: mock
+  model_name: alphafold2-mock
+  executable: null
+  checkpoint: null
+  work_dir: null
+  extra:
+    engine: colabfold_batch
+max_iterations: 5
+population_size: 24
+stagnation_limit: 3
+seed: 7

@@ -1,0 +1,71 @@
+llm_provider: heuristic
+generation:
+  provider: mock
+  model_name: progen2-mock
+  executable: null
+  checkpoint: null
+  work_dir: null
+  extra: {}
+
+refinement:
+  provider: proteinmpnn
+  model_name: proteinmpnn-cli
+  executable: null
+  checkpoint: null
+  work_dir: null
+  extra:
+    python_bin: python
+    script_path: C:\path\to\ProteinMPNN\protein_mpnn_run.py
+    sampling_temp: 0.1
+    batch_size: 1
+    device: cuda:0
+    env: {}
+    # Or override the full command explicitly:
+    # command:
+    #   - python
+    #   - C:\path\to\ProteinMPNN\protein_mpnn_run.py
+    #   - --pdb_path
+    #   - "{reference_structure_path}"
+    #   - --out_folder
+    #   - "{output_dir}"
+    #   - --num_seq_per_target
+    #   - "{population_size}"
+    #   - --sampling_temp
+    #   - "{sampling_temp}"
+    #   - --batch_size
+    #   - "{batch_size}"
+    #   - --device
+    #   - "{device}"
+
+structure:
+  provider: alphafold2
+  model_name: colabfold-cli
+  executable: colabfold_batch
+  checkpoint: null
+  work_dir: null
+  extra:
+    engine: colabfold_batch
+    model_type: alphafold2_ptm
+    num_recycle: 3
+    env: {}
+    # For AlphaFold2 python script mode, switch engine and set script_path:
+    # engine: alphafold2
+    # python_bin: python
+    # script_path: C:\path\to\alphafold\run_alphafold.py
+    # model_preset: monomer_ptm
+    # max_template_date: 2020-05-14
+    # db_preset: full_dbs
+    # data_dir: D:\alphafold_data
+    #
+    # Or override the full command explicitly:
+    # command:
+    #   - colabfold_batch
+    #   - "{input_fasta}"
+    #   - "{output_dir}"
+    #   - --model-type
+    #   - alphafold2_ptm
+
+max_iterations: 3
+population_size: 8
+stagnation_limit: 2
+seed: 7

@@ -25,16 +25,47 @@ from json import JSONDecodeError
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Type, TypeVar, Union
 
-from pydantic import (
-    BaseModel,
-    ConfigDict,
-    Field,
-    PrivateAttr,
-    field_serializer,
-    field_validator,
-    model_serializer,
-    model_validator,
-)
+try:
+    from pydantic import (
+        BaseModel,
+        ConfigDict,
+        Field,
+        PrivateAttr,
+        field_serializer,
+        field_validator,
+        model_serializer,
+        model_validator,
+    )
+except ImportError:  # pydantic v1 fallback
+    from pydantic import BaseModel, Field, PrivateAttr, validator  # type: ignore
+
+    class ConfigDict(dict):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+
+    def field_serializer(*args, **kwargs):
+        def decorator(func):
+            return func
+
+        return decorator
+
+    def model_serializer(*args, **kwargs):
+        def decorator(func):
+            return func
+
+        return decorator
+
+    def model_validator(*args, **kwargs):
+        def decorator(func):
+            return func
+
+        return decorator
+
+    def field_validator(*fields, **kwargs):
+        mode = kwargs.pop("mode", None)
+        if mode == "before":
+            kwargs["pre"] = True
+        return validator(*fields, **kwargs)
 
 from agents.const import (
     MESSAGE_ROUTE_CAUSE_BY,
@@ -46,7 +77,11 @@ from agents.const import (
     TASK_FILE_REPO,
 )
 from agents.logs import logger
-from agents.repo_parser import DotClassInfo
+try:
+    from agents.repo_parser import DotClassInfo
+except ImportError:
+    class DotClassInfo:  # type: ignore
+        pass
 from agents.system.utils.common import any_to_str, any_to_str_set, import_class
 from agents.system.utils.exceptions import handle_exception
 from agents.system.utils.serialize import (

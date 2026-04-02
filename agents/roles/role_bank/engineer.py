@@ -15,8 +15,11 @@ from agents.system.logs import logger
 from agents.system.schema import Message
 from agents.system.utils.common import CodeParser
 from agents.system.utils.special_tokens import MSG_SEP, FILENAME_CODE_SEP
-from agents.roles import Role
-from agents.actions import WriteCode, WriteCodeReview, WriteTasks, WriteDesign
+from agents.roles.role import Role
+from agents.actions.action_bank.project_management import WriteTasks
+from agents.actions.action_bank.design_api import WriteDesign
+from agents.actions.action_bank.write_code import WriteCode
+from agents.actions.action_bank.write_code_review import WriteCodeReview
 
 async def gather_ordered_k(coros, k) -> list:
     tasks = OrderedDict()

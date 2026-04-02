@@ -1,0 +1,30 @@
+# Python cache and test artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE files
+.idea/
+.vscode/
+
+# Local logs and runtime outputs
+logs/
+*.log
+
+# Local experiment scratch files
+paper_extracted.txt
+
+# Machine-local MAESD config
+config/maesd.machine-detected.yaml
+
+# OS files
+Thumbs.db
+.DS_Store

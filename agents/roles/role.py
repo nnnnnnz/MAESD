@@ -24,17 +24,33 @@ from __future__ import annotations
 
 
 from enum import Enum
-from typing import TYPE_CHECKING, Iterable, Optional, Set, Type, Union
+from functools import wraps
+from types import SimpleNamespace
+from typing import TYPE_CHECKING, Any, Iterable, Optional, Set, Type, Union
 
-from pydantic import BaseModel, ConfigDict, Field, SerializeAsAny, model_validator
+try:
+    from pydantic import BaseModel, ConfigDict, Field, SerializeAsAny, model_validator
+except ImportError:  # pydantic v1 fallback
+    from pydantic import BaseModel, Field  # type: ignore
 
-from agents.actions import Action, ActionOutput
+    def model_validator(*args, **kwargs):
+        def decorator(func):
+            return func
 
-#from agents.logs import logger
+        return decorator
+
+    class ConfigDict(dict):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+
+    SerializeAsAny = Any
+
+from agents.actions.action import Action, ActionOutput
+
+from agents.system.llm import LLM
+from agents.system.logs import logger
 from agents.system.memory import Memory
 from agents.schema import Message, MessageQueue, SerializationMixin, Task, TaskResult
-#from agents.system.utils.common import any_to_name, any_to_str, role_raise_decorator
-#from agents.system.utils.repair_llm_raw_output import extract_state_value_from_output
 
 if TYPE_CHECKING:
     from agents.environment import Environment  # noqa: F401
@@ -69,6 +85,95 @@ ROLE_TEMPLATE = """Your response should be based on the previous conversation hi
 {history}
 {name}: {result}
 """
+
+
+def any_to_str(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    if hasattr(value, "name") and getattr(value, "name"):
+        return str(getattr(value, "name"))
+    return str(value)
+
+
+def any_to_name(value: Any) -> str:
+    if value is None:
+        return ""
+    if hasattr(value, "__name__"):
+        return str(value.__name__)
+    if hasattr(value, "name") and getattr(value, "name"):
+        return str(getattr(value, "name"))
+    return value.__class__.__name__
+
+
+def any_to_str_set(value: Any) -> set[str]:
+    if value is None:
+        return set()
+    if isinstance(value, set):
+        return {any_to_str(v) for v in value}
+    if isinstance(value, (list, tuple)):
+        return {any_to_str(v) for v in value}
+    return {any_to_str(value)}
+
+
+def extract_state_value_from_output(text: str) -> str:
+    if text is None:
+        return "-1"
+    text = str(text).strip()
+    if text in {"-1", "0", "1", "2", "3", "4", "5"}:
+        return text
+    match = __import__("re").search(r"-?\d+", text)
+    return match.group(0) if match else "-1"
+
+
+def role_raise_decorator(func):
+    @wraps(func)
+    async def wrapper(self, *args, **kwargs):
+        try:
+            return await func(self, *args, **kwargs)
+        except Exception as exc:
+            logger.error(f"{self._setting} failed: {exc}")
+            raise
+
+    return wrapper
+
+
+class ContextMixin:
+    @property
+    def context(self):
+        if not hasattr(self, "_context"):
+            self._context = SimpleNamespace(
+                cost_manager=SimpleNamespace(),
+                src_workspace=None,
+            )
+        return self._context
+
+    @context.setter
+    def context(self, value):
+        self._context = value
+
+    @property
+    def config(self):
+        if not hasattr(self, "_config"):
+            self._config = SimpleNamespace(
+                prompt_schema="markdown",
+                project_name="",
+                project_path="",
+            )
+        return self._config
+
+    @property
+    def llm(self):
+        if not hasattr(self, "_llm"):
+            proxy = getattr(self, "proxy", "")
+            api_key = getattr(self, "llm_api_key", "")
+            self._llm = LLM(proxy, api_key)
+        return self._llm
+
+    @llm.setter
+    def llm(self, value):
+        self._llm = value
 
 
 class RoleReactMode(str, Enum):
@@ -222,16 +327,32 @@ class Role(SerializationMixin, ContextMixin, BaseModel):
         self.set_actions(self.actions)
         return self
 
+    @property
+    def _rc(self):
+        return self.rc
+
+    def _init_actions(self, actions: list[Union[Action, Type[Action]]]):
+        self.set_actions(actions)
+
     def _init_action(self, action: Action):
-        if not action.private_config:
-            action.set_llm(self.llm, override=True)
-        else:
-            action.set_llm(self.llm, override=False)
-        action.set_prefix(self._get_prefix())
+        action.context = self.context
+        action.set_prefix(
+            self._get_prefix(),
+            self.profile,
+            getattr(self, "proxy", ""),
+            getattr(self, "llm_api_key", ""),
+            getattr(self, "serpapi_api_key", None),
+        )
 
     def set_action(self, action: Action):
         """Add action to the role."""
         self.set_actions([action])
+
+    def get_action_by_name(self, action_name: str) -> Optional[Action]:
+        for action in self.actions:
+            if action.__class__.__name__ == action_name or getattr(action, "name", "") == action_name:
+                return action
+        return None
 
     def set_actions(self, actions: list[Union[Action, Type[Action]]]):
         """Add actions to the role.

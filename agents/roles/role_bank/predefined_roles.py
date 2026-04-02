@@ -5,8 +5,10 @@
 @Author  : alexanderwu
 @From    : MeteGPT
 """
-from agents.actions import WritePRD, WriteTasks, WriteDesign
-from agents.roles import Role
+from agents.actions.action_bank.design_api import WriteDesign
+from agents.actions.action_bank.project_management import WriteTasks
+from agents.actions.action_bank.write_prd import WritePRD
+from agents.roles.role import Role
 
 class ProductManager(Role):
     def __init__(self, watch_actions, name="Alice", profile="Product Manager", goal="Efficiently create a successful product",
